@@ -25,25 +25,26 @@ def run_games(uid, queue, sess):
             if 'solved' in res['game'] and res['game']['solved']:
                 log("Process #%03d solved n = %d in " % (uid, n) + colored.red("%.2fs" % (time() - start)))
 
-def main(username, password, start, stop):
-    sess = HackerrankSession()
-    res = sess.login(username, password)
-    log("Logged in as %s" % (colored.green(res['username'])))    
+def run(start, stop, n_procs = 100, username='', password='', sess=None):
+    if sess is None:
+        sess = HackerrankSession()
+        res = sess.login(username, password)
+        log("Logged in as %s" % (colored.green(res['username'])))    
     
     q = Queue()
-    for i in range(int(start), int(stop)+1):
+    for i in range(start, stop+1):
         q.put(i)
     
-    processes = []
-    for uid in range(75):
-        p = Process(target=run_games, args=(uid, q, deepcopy(sess)))
+    processes = [Process(target=run_games, args=(uid, q, deepcopy(sess))) for uid in range(n_procs)]
+    for p in processes:
         p.start()
-        processes.append(p)
-
     for p in processes:
         p.join()
 
     log("Finished in " + colored.green(" %.2fs" % (time()-_start)))
+
+def main(username, password, start, stop):
+    run(int(start), int(stop), username, password)
 
 if __name__ == '__main__':
     import sys

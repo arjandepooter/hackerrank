@@ -13,6 +13,16 @@ class HackerrankSession(Session):
         etree = html.fromstring(res.content)
         self.headers['X-CSRF-Token'] = etree.xpath('/html/head/meta[@name="csrf-token"]')[0].attrib['content']
 
+    def signup(self, username, email, password):
+        res = self.post('/users.json', {
+            'commit' : 'Sign up',
+            'user[email]' : email,
+            'user[username]' : username,
+            'user[password]' : password,
+        })
+
+        return self.login(username, password)
+
     def login(self, username, password):
         res = self.post('/users/sign_in.json', data={
             'commit' : 'Sign in',
